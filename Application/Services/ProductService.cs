@@ -2,12 +2,12 @@
 using Application.Interfaces.Services;
 using AutoMapper;
 using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
 using System.Threading.Tasks;
 using Domain.DTOs.Products;
 using Domain.Models;
-using System;
 using System.Linq;
+using Domain.Errors;
+using Domain.Abstractions;
 
 namespace Application.Services
 {
@@ -22,66 +22,77 @@ namespace Application.Services
             this.mapper = mapper;
         }
 
-        public IEnumerable<ProductResponse> GetProducts()
+        public Result<IEnumerable<ProductResponse>> GetProducts()
         {
-            return productRepository
-                .GetProducts()
-                .ToList()
-                .Select(product => mapper.Map<ProductResponse>(product));
+            return Result<IEnumerable<ProductResponse>>
+                .Success(productRepository
+                            .GetProducts()
+                            .ToList()
+                            .Select(product => mapper.Map<ProductResponse>(product)));
         }
 
-        public async Task<ProductResponse> CreateProduct(ProductValidator payload)
+        public async Task<Result<ProductResponse>> CreateProduct(ProductValidator payload)
         {
             if (!payload.Validate())
             {
-                throw new ValidationException("invalid payload");
+                return Result<ProductResponse>.Failure(
+                    ProductErrors.InvalidPayload, null);
             }
 
             var product = mapper.Map<Product>(payload);
 
-            return mapper.Map<ProductResponse>(
-                await productRepository.CreateProduct(product));
+            return Result<ProductResponse>
+                .Success(
+                    mapper.Map<ProductResponse>(
+                    await productRepository.CreateProduct(product)));
         }
 
-        public async Task<ProductResponse> GetProductById(int id)
+        public async Task<Result<ProductResponse>> GetProductById(int id)
         {
             var product = await productRepository.GetProductById(id);
 
             if (product is null)
             {
-                throw new EntryPointNotFoundException("product not found");
+                return Result<ProductResponse>.Failure(
+                    ProductErrors.NotFound, null);
             }
 
-            return mapper.Map<ProductResponse>(product);
+            return Result<ProductResponse>
+                .Success(mapper.Map<ProductResponse>(product));
         }
 
-        public async Task<ProductResponse> UpdateProduct(int id, ProductValidator payload)
+        public async Task<Result<ProductResponse>> UpdateProduct(int id, ProductValidator payload)
         {
             if (!payload.ValidateForUpdate())
             {
-                throw new ValidationException("invalid payload");
+                return Result<ProductResponse>.Failure(
+                    ProductErrors.InvalidPayload, null);
             }
 
             var product = await productRepository.GetProductById(id);
             if (product is null)
             {
-                throw new EntryPointNotFoundException("product not found");
+                return Result<ProductResponse>.Failure(
+                    ProductErrors.NotFound, null);
             }
 
             product.Update(payload);
 
-            return mapper.Map<ProductResponse>(
-                await productRepository.UpdateProduct(product));
+            return Result<ProductResponse>
+                .Success(mapper.Map<ProductResponse>(
+                    await productRepository.UpdateProduct(product)));
         }
 
-        public async Task DeleteProduct(int id)
+        public async Task<Result<ProductResponse>> DeleteProduct(int id)
         {
             if (await productRepository.GetProductById(id) is null)
             {
-                throw new EntryPointNotFoundException("product not found");
+                return Result<ProductResponse>.Failure(ProductErrors.NotFound, null);
             };
 
             await productRepository.DeleteProduct(id);
+
+            return Result<ProductResponse>.Success(null);
         }
     }
 }
