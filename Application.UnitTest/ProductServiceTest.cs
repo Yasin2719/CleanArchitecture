@@ -3,11 +3,8 @@ using Application.Interfaces.Services;
 using Application.Services;
 using Application.UnitTest.Fakers;
 using Domain.DTOs.Products;
+using Domain.Errors;
 using Domain.Models;
-using System;
-using System.Collections.Generic;
-using System.ComponentModel.DataAnnotations;
-using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
 
@@ -27,43 +24,45 @@ namespace Application.UnitTest
         }
 
         [Fact]
-        public void GetProducts_ShouldReturnListOfProductResponse()
+        public void GetProducts_ShouldBeSucess()
         {
             //Arrange
             //Act
-            var result = _productService.GetProducts().ToList();
+            var response = _productService.GetProducts();
 
-            Assert.IsType<List<ProductResponse>>(result);
+            //Assert
+            Assert.True(response.IsSucess);
         }
 
         [Fact]
-        public async void CreateProdut_ShouldCreateProduct_WhenPayloadIsValid()
+        public async void CreateProdut_ShouldBeSuccess_WhenPayloadIsValid()
         {
             //Arrange
             var payload = CreateValidPayload();
 
             //Act
-            var result = await _productService.CreateProduct(payload);
+            var response = await _productService.CreateProduct(payload);
 
             //Assert
-            Assert.NotNull(result);
+            Assert.True(response.IsSucess);
         }
 
         [Fact]
-        public async void CreateProduct_ShouldThrowException_WhenPayloadIsNotValid()
+        public async void CreateProduct_ShouldBeFailure_WhenPayloadIsNotValid()
         {
             //Arrange
             var payload = CreateInValidPayload();
 
             //Act
-            Task action() => _productService.CreateProduct(payload);
+            var response = await _productService.CreateProduct(payload);
 
             //Assert
-            await Assert.ThrowsAsync<ValidationException>(action);
+            Assert.True(response.IsFailure);
+            Assert.Equal(ProductErrors.InvalidPayload, response.Error);
         }
 
         [Fact]
-        public async void GetProductById_ShouldReturnProduct_WhenProductExist()
+        public async void GetProductById_ShouldBeSuccess_WhenProductExist()
         {
             //Arrange
             var product = await CreateProduct();
@@ -73,25 +72,25 @@ namespace Application.UnitTest
                 .GetProductById(product.Id);
 
             //Assert
-            Assert.NotNull(response);
-            Assert.IsType<ProductResponse>(response);
+            Assert.True(response.IsSucess);
         }
 
         [Fact]
-        public async void GetProductById_ShouldThrowAnException_WhenProductNotExist()
+        public async void GetProductById_ShouldBeFailure_WhenProductNotExist()
         {
             //Arrange
             const int productId = -1;
 
             //Act
-            Task action() => _productService.GetProductById(productId);
+            var response = await _productService.GetProductById(productId);
 
             //Assert
-            await Assert.ThrowsAsync<EntryPointNotFoundException>(action);
+            Assert.True(response.IsFailure);
+            Assert.Equal(ProductErrors.NotFound, response.Error);
         }
 
         [Fact]
-        public async void UpdateProduct_ShouldUpdateProduct_WhenProductExistAndPayloadIsValid()
+        public async void UpdateProduct_ShouldBeSuccess_WhenProductExistAndPayloadIsValid()
         {
             //Arrange
             var product = await CreateProduct();
@@ -101,58 +100,64 @@ namespace Application.UnitTest
             var response = await _productService.UpdateProduct(product.Id, payload);
 
             //Assert
-            Assert.NotNull(response);
-            Assert.IsType<ProductResponse>(response);
+            Assert.True(response.IsSucess);
         }
 
         [Fact]
-        public async void UpdateProduct_ShouldThrowException_WhenPayloadIsNotValid()
+        public async void UpdateProduct_ShouldBeFailure_WhenPayloadIsNotValid()
         {
             //Arrange
             var product = await CreateProduct();
             var payload = CreateInValidPayload();
 
             //Act
-            Task action() => _productService.UpdateProduct(product.Id, payload);
+            var response = await _productService.UpdateProduct(product.Id, payload);
 
-            await Assert.ThrowsAsync<ValidationException>(action);
+            //Assert
+            Assert.True(response.IsFailure);
+            Assert.Equal(ProductErrors.InvalidPayload, response.Error);
         }
 
         [Fact]
-        public async void UpdateProduct_ShouldThrowException_WhenProductNotExist()
+        public async void UpdateProduct_ShouldBeFailure_WhenProductNotExist()
         {
             //Arrange
             const int productId = -1;
             var payload = CreateValidPayload();
 
             //Act
-            Task action() => _productService.UpdateProduct(productId, payload);
+            var response = await _productService.UpdateProduct(productId, payload);
 
-            await Assert.ThrowsAsync<EntryPointNotFoundException>(action);
+            //Assert
+            Assert.True(response.IsFailure);
+            Assert.Equal(ProductErrors.NotFound, response.Error);
         }
 
         [Fact]
-        public async void DeleteProduct_SouldDeleteProduct_WhenProductExist()
+        public async void DeleteProduct_SouldBeSuccess_WhenProductExist()
         {
             //Arrange
             var product = await CreateProduct();
 
             //Act
-            await _productService.DeleteProduct(product.Id);
+            var response = await _productService.DeleteProduct(product.Id);
 
             //Assert
-            var deletedProduct = await _productRepository.GetProductById(product.Id);
-            Assert.Null(deletedProduct);
+            Assert.True(response.IsSucess);
         }
 
         [Fact]
-        public async void DeleteProduct_SouldThrowAnException_WhenProductNotExist()
+        public async void DeleteProduct_SouldBeFailure_WhenProductNotExist()
         {
+            //Arrange
             const int productId = -1;
 
-            Task action() => _productService.DeleteProduct(productId);
+            //Act
+            var response = await _productService.DeleteProduct(productId);
 
-            await Assert.ThrowsAsync<EntryPointNotFoundException>(action);
+            //Assert
+            Assert.True(response.IsFailure);
+            Assert.Equal(ProductErrors.NotFound, response.Error);
         }
 
         private async Task<Product> CreateProduct()
