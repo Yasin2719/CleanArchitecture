@@ -8,7 +8,7 @@ using Domain.Models;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Application.UnitTest
+namespace Application.UnitTest.Products
 {
     public class ProductServiceTest
     {

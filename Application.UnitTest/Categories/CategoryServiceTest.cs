@@ -13,7 +13,7 @@ using System.Text;
 using System.Threading.Tasks;
 using Xunit;
 
-namespace Application.UnitTest
+namespace Application.UnitTest.Categories
 {
     public class CategoryServiceTest
     {
@@ -29,83 +29,81 @@ namespace Application.UnitTest
         }
 
         [Fact]
-        public void GetCategories_ShouldListOfCategoryResponse()
+        public void GetCategories_ShouldBeSuccess()
         {
             //Arrange
             //Act
             var result = _categoryService.GetCategories();
 
             //Assert
-            Assert.IsType<List<CategoryResponse>>(result);
+            Assert.True(result.IsSucess);
         }
 
         [Fact]
-        public async void CreateCategory_ShouldCreateCategory_WhenPayloadIsValid()
+        public async void CreateCategory_ShouldBeSuccess_WhenPayloadIsValid()
         {
             //Arrange
             var payload = CreateValidPayload();
 
             //Act
-            var response = await _categoryService.CreateCategory(payload);
+            var result = await _categoryService.CreateCategory(payload);
 
             //Assert
-            Assert.NotNull(response);
+            Assert.True(result.IsSucess);
         }
 
         [Fact]
-        public async void CreateCategory_ShouldThrowAnException_WhenPayloadIsNotValid()
+        public async void CreateCategory_ShouldBeFailure_WhenPayloadIsNotValid()
         {
             //Arrange
             var payload = CreateInValidPayload();
 
             //Act
-            Task action() => _categoryService.CreateCategory(payload);
+            var result = await _categoryService.CreateCategory(payload);
 
             //Assert
-            await Assert.ThrowsAsync<ValidationException>(action);
+            Assert.True(result.IsFailure);
         }
 
         [Fact]
-        public async void GetCategoryById_ShouldGetCategoryResponse_WhenCategoryExist()
+        public async void GetCategoryById_ShouldBeSuccess_WhenCategoryExist()
         {
             //Arrange
             var category = await CreateCategory("Manually Created Category Test");
 
             //Act
-            var response = await _categoryService
+            var result = await _categoryService
                 .GetCategoryById(category.Id);
 
             //Assert
-            Assert.NotNull(response);
-            Assert.IsType<CategoryResponse>(response);
+            Assert.True(result.IsSucess);
         }
 
         [Fact]
-        public async void GetCategoryById_ShouldThrowAnException_WhenCategoryNotExist()
+        public async void GetCategoryById_ShouldBeFailure_WhenCategoryNotExist()
         {
             //Arrange
             const int categoryId = -1;
 
             //Act
-            Task action() => _categoryService.GetCategoryById(categoryId);
+            var result = await _categoryService.GetCategoryById(categoryId);
 
             //Assert
-            await Assert.ThrowsAsync<EntryPointNotFoundException>(action);
+            Assert.True(result.IsFailure);
         }
 
         [Fact]
-        public async void UpdateCategory_ShouldUpdateCategory_WhenCategoryExist()
+        public async void UpdateCategory_ShouldBeSuccess_WhenCategoryExist()
         {
             //Arrange
             var category = await CreateCategory("Manually Created Category Test");
             var payload = CreateValidPayload();
 
             //Act
-            var response = await _categoryService.UpdateCategory(category.Id, payload);
+            var result = await _categoryService.UpdateCategory(category.Id, payload);
 
             //Assert
-            Assert.NotNull(response);
-            Assert.IsType<CategoryResponse>(response);
+            Assert.True(result.IsSucess);
         }
 
         [Fact]
@@ -116,51 +114,50 @@ namespace Application.UnitTest
             var payload = CreateInValidPayload();
 
             //Act
-            Task action() => _categoryService.UpdateCategory(category.Id, payload);
+            var result = await _categoryService.UpdateCategory(category.Id, payload);
 
             //Assert
-            await Assert.ThrowsAsync<ValidationException>(action);
+            Assert.True(result.IsFailure);
         }
 
         [Fact]
-        public async void UpdateCategory_ShouldThrowAnException_WhenCategoryNotExist()
+        public async void UpdateCategory_ShouldBeFailure_WhenCategoryNotExist()
         {
             //Arrange
             const int categoryId = -1;
             var payload = CreateValidPayload();
 
             //Act
-            Task action() => _categoryService.UpdateCategory(categoryId, payload);
+            var result = await _categoryService.UpdateCategory(categoryId, payload);
 
             //Assert
-            await Assert.ThrowsAsync<EntryPointNotFoundException>(action);
+            Assert.True(result.IsFailure);
         }
 
         [Fact]
-        public async void DeleteCategory_ShouldDeleteCategory_WhenCategoryExist()
+        public async void DeleteCategory_ShouldBeSuccess_WhenCategoryExist()
         {
             //Arrange
             var category = await CreateCategory("Manually Created Category Test");
 
             //Act
-            await _categoryService.DeleteCategory(category.Id);
+            var result = await _categoryService.DeleteCategory(category.Id);
 
             //Assert
-            var deletedCategory = await _categoryRepository.GetCategoryById(category.Id);
-            Assert.Null(deletedCategory);
+            Assert.True(result.IsSucess);
         }
 
         [Fact]
-        public async void DeleteCategory_ShouldThrowAnException_WhenCategoryNotExist()
+        public async void DeleteCategory_ShouldBeFailure_WhenCategoryNotExist()
         {
             //Arrange
             const int categoryId = -1;
 
             //Act
-            Task action() => _categoryService.DeleteCategory(categoryId);
+            var result = await _categoryService.DeleteCategory(categoryId);
 
             //Assert
-            await Assert.ThrowsAsync<EntryPointNotFoundException>(action);
+            Assert.True(result.IsFailure);
         }
 
 

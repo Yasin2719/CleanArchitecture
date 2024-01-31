@@ -9,16 +9,14 @@ namespace Infrastructure.IntegrationTest
 {
     public abstract class BasicIntegrationTest : IClassFixture<WebApplicationFactory<Startup>>
     {
+        protected readonly IServiceScope _scope;
         protected readonly CleanArchitectureDbContext _dbContext;
-        protected readonly IProductRepository _productRepository;
+
 
         public BasicIntegrationTest(WebApplicationFactory<Startup> factory)
         {
-            var scope = factory.Services.CreateScope();
-
-            _productRepository = scope.ServiceProvider.GetRequiredService<IProductRepository>();
-            _dbContext = scope.ServiceProvider.GetRequiredService<CleanArchitectureDbContext>();
-
+            _scope = factory.Services.CreateScope();
+            _dbContext = _scope.ServiceProvider.GetRequiredService<CleanArchitectureDbContext>();
         }
     }
 }

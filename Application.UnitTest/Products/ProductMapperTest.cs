@@ -4,7 +4,7 @@ using Domain.Models;
 using Xunit;
 using Application.UnitTest.Fakers;
 
-namespace Application.UnitTest
+namespace Application.UnitTest.Products
 {
     public class ProductMapperTest
     {

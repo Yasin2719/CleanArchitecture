@@ -1,7 +1,9 @@
 using API;
+using Application.Interfaces.Repositories;
 using Domain.Models;
 using Microsoft.AspNetCore.Mvc.Testing;
 using Microsoft.EntityFrameworkCore;
+using Microsoft.Extensions.DependencyInjection;
 using System.Linq;
 using System.Threading.Tasks;
 using Xunit;
@@ -10,7 +12,13 @@ namespace Infrastructure.IntegrationTest
 {
     public class ProductRepositoryTest : BasicIntegrationTest
     {
-        public ProductRepositoryTest(WebApplicationFactory<Startup> factory) : base(factory) { }
+        private readonly IProductRepository _productRepository;
+
+        public ProductRepositoryTest(WebApplicationFactory<Startup> factory) : base(factory)
+        {
+            _productRepository = _scope.ServiceProvider
+                .GetRequiredService<IProductRepository>();
+        }
 
         [Fact]
         public async void Create_ShouldAddProduct_WhenPayloadIsValid()
@@ -33,6 +41,7 @@ namespace Infrastructure.IntegrationTest
                                     .Products
                                     .FirstOrDefault(p => p.Id == product.Id);
             Assert.NotNull(createdProduct);
+            await ClearProducts();
         }
 
         [Fact]
@@ -46,6 +55,7 @@ namespace Infrastructure.IntegrationTest
 
             //Assert
             Assert.NotNull(product);
+            await ClearProducts();
         }
 
         [Fact]
@@ -77,7 +87,9 @@ namespace Infrastructure.IntegrationTest
             var createdProduct = _dbContext
                                     .Products
                                     .FirstOrDefault(p => p.Id == product.Id);
+
             Assert.Equal(product.Price, updatedProduct.Price);
+            await ClearProducts();
         }
 
         [Fact]
@@ -117,9 +129,17 @@ namespace Infrastructure.IntegrationTest
 
         private async Task<int> GetUnassignedId()
         {
-            return await _dbContext.Products
-                                    .Select(p => p.Id)
-                                    .MaxAsync() + 1;
+            var products = await _dbContext.Products
+                                            .Select(c => c.Id)
+                                            .ToListAsync();
+
+            return (products.Any() ? products.Max() : 0) + 1;
+        }
+
+        private async Task ClearProducts()
+        {
+            _dbContext.Products.RemoveRange(
+                await _dbContext.Products.ToListAsync());
         }
     }
 }
