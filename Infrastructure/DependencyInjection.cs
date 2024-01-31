@@ -16,7 +16,7 @@ namespace Infrastructure
                 options.UseSqlite(defaultConnectionString));
 
             services.AddScoped<IProductRepository, ProductRepository>();
-            //services.AddScoped<ICategoryRepository, CategoryRepository>();
+            services.AddScoped<ICategoryRepository, CategoryRepository>();
 
             return services;
         }

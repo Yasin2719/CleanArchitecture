@@ -25,8 +25,6 @@ namespace Infrastructure.Repositories
 
         public async Task<Category> CreateCategory(Category category)
         {
-            category.CreatedAt = DateTime.Now;
-
             await dc.Categories.AddAsync(category);
             await dc.SaveChangesAsync();
 
@@ -40,10 +38,7 @@ namespace Infrastructure.Repositories
 
         public async Task<Category> UpdateCategory(Category category)
         {
-            category.UpdatedAt = DateTime.Now;
-
             await dc.SaveChangesAsync();
-
             return category;
         }
 

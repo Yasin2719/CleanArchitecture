@@ -13,6 +13,15 @@ namespace Infrastructure.Data
         protected override void OnModelCreating(ModelBuilder modelBuilder)
         {
             modelBuilder
+                .Entity<Category>()
+                .HasData(
+                    new Category
+                    {
+                        Id = 1,
+                        Label = "Multimedia"
+                    });
+
+            modelBuilder
                 .Entity<Product>()
                 .HasData(
                     new Product

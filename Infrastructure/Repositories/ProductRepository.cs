@@ -1,7 +1,6 @@
 ﻿using Application.Interfaces.Repositories;
 using Domain.Models;
 using Infrastructure.Data;
-using System;
 using System.Collections.Generic;
 using System.Linq;
 using System.Threading.Tasks;
@@ -27,8 +26,6 @@ namespace Infrastructure.Repositories
 
         public async Task<Product> CreateProduct(Product product)
         {
-            product.CreatedAt = DateTime.Now;
-
             await dc.Products.AddAsync(product);
             await dc.SaveChangesAsync();
 
@@ -43,10 +40,7 @@ namespace Infrastructure.Repositories
 
         public async Task<Product> UpdateProduct(Product product)
         {
-            product.UpdatedAt = DateTime.Now;
-
             await dc.SaveChangesAsync();
-
             return product;
         }
 

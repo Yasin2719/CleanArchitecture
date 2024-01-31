@@ -8,8 +8,8 @@ using Microsoft.EntityFrameworkCore.Storage.ValueConversion;
 
 namespace Infrastructure.Migrations
 {
-    [DbContext(typeof(DbContext))]
-    [Migration("20240118154605_InitialCreate")]
+    [DbContext(typeof(CleanArchitectureDbContext))]
+    [Migration("20240130143525_InitialCreate")]
     partial class InitialCreate
     {
         protected override void BuildTargetModel(ModelBuilder modelBuilder)
@@ -18,7 +18,7 @@ namespace Infrastructure.Migrations
             modelBuilder
                 .HasAnnotation("ProductVersion", "5.0.0");
 
-            modelBuilder.Entity("Infrastructure.Models.Categories", b =>
+            modelBuilder.Entity("Domain.Models.Category", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -36,9 +36,17 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Categories");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2024, 1, 30, 15, 35, 24, 361, DateTimeKind.Local).AddTicks(5894),
+                            Label = "Multimedia"
+                        });
                 });
 
-            modelBuilder.Entity("Infrastructure.Models.Product", b =>
+            modelBuilder.Entity("Domain.Models.Product", b =>
                 {
                     b.Property<int>("Id")
                         .ValueGeneratedOnAdd()
@@ -62,6 +70,16 @@ namespace Infrastructure.Migrations
                     b.HasKey("Id");
 
                     b.ToTable("Products");
+
+                    b.HasData(
+                        new
+                        {
+                            Id = 1,
+                            CreatedAt = new DateTime(2024, 1, 30, 15, 35, 24, 368, DateTimeKind.Local).AddTicks(2770),
+                            Description = "The last, powerfull TV of Samsung",
+                            Label = "Samsung Tv",
+                            Price = 1599.99m
+                        });
                 });
 #pragma warning restore 612, 618
         }
