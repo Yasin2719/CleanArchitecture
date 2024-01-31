@@ -36,7 +36,7 @@ namespace Application.Services
             if (!payload.Validate())
             {
                 return Result<ProductResponse>.Failure(
-                    ProductErrors.InvalidPayload, null);
+                    ProductErrors.InvalidPayload);
             }
 
             var product = mapper.Map<Product>(payload);
@@ -54,7 +54,7 @@ namespace Application.Services
             if (product is null)
             {
                 return Result<ProductResponse>.Failure(
-                    ProductErrors.NotFound, null);
+                    ProductErrors.NotFound);
             }
 
             return Result<ProductResponse>
@@ -66,14 +66,14 @@ namespace Application.Services
             if (!payload.ValidateForUpdate())
             {
                 return Result<ProductResponse>.Failure(
-                    ProductErrors.InvalidPayload, null);
+                    ProductErrors.InvalidPayload);
             }
 
             var product = await productRepository.GetProductById(id);
             if (product is null)
             {
                 return Result<ProductResponse>.Failure(
-                    ProductErrors.NotFound, null);
+                    ProductErrors.NotFound);
             }
 
             product.Update(payload);
@@ -87,12 +87,13 @@ namespace Application.Services
         {
             if (await productRepository.GetProductById(id) is null)
             {
-                return Result<ProductResponse>.Failure(ProductErrors.NotFound, null);
+                return Result<ProductResponse>
+                    .Failure(ProductErrors.NotFound);
             };
 
             await productRepository.DeleteProduct(id);
 
-            return Result<ProductResponse>.Success(null);
+            return Result<ProductResponse>.Success();
         }
     }
 }

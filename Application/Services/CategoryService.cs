@@ -8,6 +8,8 @@ using System.Threading.Tasks;
 using System.Linq;
 using System.ComponentModel.DataAnnotations;
 using System;
+using Domain.Abstractions;
+using Domain.Errors;
 
 namespace Application.Services
 {
@@ -22,66 +24,78 @@ namespace Application.Services
             _mapper = mapper;
         }
 
-        public IEnumerable<CategoryResponse> GetCategories()
+        public Result<IEnumerable<CategoryResponse>> GetCategories()
         {
-            return _categoryRepository
-                .GetCategories()
-                .Select(category => _mapper.Map<CategoryResponse>(category))
-                .ToList();
+            return Result<IEnumerable<CategoryResponse>>
+                .Success(_categoryRepository
+                    .GetCategories()
+                    .Select(category => _mapper.Map<CategoryResponse>(category)));
         }
 
-        public async Task<CategoryResponse> CreateCategory(CategoryValidator payload)
+        public async Task<Result<CategoryResponse>> CreateCategory(CategoryValidator payload)
         {
             var category = _mapper.Map<Category>(payload);
 
             if (!payload.Validate())
             {
-                throw new ValidationException("invalid payload");
+                return Result<CategoryResponse>.Failure(
+                    CategoryErrors.InvalidPayload);
             }
 
-            return _mapper.Map<CategoryResponse>(
-                await _categoryRepository.CreateCategory(category));
+            category = await _categoryRepository.CreateCategory(category);
+
+            return Result<CategoryResponse>.Success(
+                _mapper.Map<CategoryResponse>(category));
         }
 
-        public async Task<CategoryResponse> GetCategoryById(int id)
+        public async Task<Result<CategoryResponse>> GetCategoryById(int id)
         {
             var category = await _categoryRepository.GetCategoryById(id);
 
             if (category is null)
             {
-                throw new EntryPointNotFoundException("category not found");
+                return Result<CategoryResponse>.Failure(
+                    CategoryErrors.NotFound);
             }
 
-            return _mapper.Map<CategoryResponse>(category);
+            return Result<CategoryResponse>.Success(
+                _mapper.Map<CategoryResponse>(category));
         }
 
-        public async Task<CategoryResponse> UpdateCategory(int id, CategoryValidator payload)
+        public async Task<Result<CategoryResponse>> UpdateCategory(int id, CategoryValidator payload)
         {
             if (!payload.Validate())
             {
-                throw new ValidationException("invalid payload");
+                return Result<CategoryResponse>.Failure(
+                    CategoryErrors.InvalidPayload);
             }
 
             var category = await _categoryRepository.GetCategoryById(id);
             if (category is null)
             {
-                throw new EntryPointNotFoundException("category not found");
+                return Result<CategoryResponse>.Failure(
+                    CategoryErrors.NotFound);
             }
 
-            category.Label = payload.Label;
+            category.Update(payload);
 
-            return _mapper.Map<CategoryResponse>(
-                await _categoryRepository.UpdateCategory(category));
+            category = await _categoryRepository.UpdateCategory(category);
+
+            return Result<CategoryResponse>.Success(
+                _mapper.Map<CategoryResponse>(category));
         }
-        public async Task DeleteCategory(int id)
+        public async Task<Result<CategoryResponse>> DeleteCategory(int id)
         {
             var category = await _categoryRepository.GetCategoryById(id);
             if (category is null)
             {
-                throw new EntryPointNotFoundException("category not found");
+                return Result<CategoryResponse>.Failure(
+                    CategoryErrors.NotFound);
             }
 
             await _categoryRepository.DeleteCategory(category);
+
+            return Result<CategoryResponse>.Success();
         }
     }
 }
