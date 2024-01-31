@@ -1,5 +1,6 @@
 ﻿using Domain.DTOs.Products;
 using Domain.Interfaces;
+using Domain.Utils;
 using System;
 
 namespace Domain.Models
@@ -10,27 +11,16 @@ namespace Domain.Models
         public string Label { get; set; }
         public string Description { get; set; }
         public decimal Price { get; set; }
-        public DateTime CreatedAt { get; set; }
+        public DateTime CreatedAt { get; set; } = DateTime.Now;
         public DateTime? UpdatedAt { get; set; }
 
         public void Update(ProductValidator payload)
         {
-            Label =
-                (string.IsNullOrEmpty(payload.Label) ||
-                string.IsNullOrWhiteSpace(payload.Label)) ?
-                Label :
-                payload.Label;
+            if (payload.Label.IsValid()) Label = payload.Label;
+            if (payload.Description.IsValid()) Description = payload.Description;
+            if (payload.Price > 0) Price = payload.Price;
 
-            Description =
-                (string.IsNullOrEmpty(payload.Description) ||
-                string.IsNullOrEmpty(payload.Description)) ?
-                Description :
-                payload.Description;
-
-            Price =
-                payload.Price > 0 ?
-                payload.Price :
-                Price;
+            UpdatedAt = DateTime.Now;
         }
     }
 }
